@@ -30,6 +30,10 @@ local.properties
 .cxx/
 *.keystore
 !debug.keystore
+# Android build outputs (GitHub 100 MB limit)
+*.apk
+*.aab
+android/app/release/
 # Keystore credentials - НЕ коммитить пароли!
 android/keystore.properties
 android/app/*-release.keystore
