@@ -1,0 +1,8 @@
+{
+  "name": "PlantLens 13 new",
+  "description": "Advanced Plant Intelligence: Identify species, diagnose diseases, and manage your botanical collection with AI-powered care reminders.",
+  "requestFramePermissions": [
+    "camera",
+    "geolocation"
+  ]
+}
