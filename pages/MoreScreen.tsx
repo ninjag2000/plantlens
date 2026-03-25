@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useSubscription } from '../hooks/useSubscription';
 import { useI18n } from '../hooks/useI18n';
@@ -10,7 +10,13 @@ import { getThemeColors } from '../utils/themeColors';
 
 const MoreScreen: React.FC = () => {
     const navigation = useNavigation();
-    const { isSubscribed } = useSubscription();
+    const { isSubscribed, checkSubscription } = useSubscription();
+
+    useFocusEffect(
+        React.useCallback(() => {
+            checkSubscription();
+        }, [checkSubscription])
+    );
     const { t } = useI18n();
     const { resetOnboarding } = useOnboarding();
     const { theme } = useTheme();
@@ -24,14 +30,22 @@ const MoreScreen: React.FC = () => {
                     icon: 'water' as const, 
                     text: t('more_tool_water_calc'), 
                     subtext: t('more_tool_water_calc_desc'), 
-                    action: () => navigation.navigate('NewCameraScreen' as never, { analysisMode: 'water' } as never), 
+                    premium: true,
+                    action: () => {
+                        if (!isSubscribed) { navigation.navigate('SubscriptionManage' as never); return; }
+                        navigation.navigate('NewCameraScreen' as never, { analysisMode: 'water' } as never);
+                    }, 
                     color: '#60a5fa'
                 },
                 { 
                     icon: 'sunny' as const, 
                     text: t('more_tool_luxometer'), 
                     subtext: t('more_tool_luxometer_desc'), 
-                    action: () => navigation.navigate('Luxometer' as never), 
+                    premium: true,
+                    action: () => {
+                        if (!isSubscribed) { navigation.navigate('SubscriptionManage' as never); return; }
+                        navigation.navigate('Luxometer' as never);
+                    }, 
                     color: '#fbbf24'
                 },
                 { 
@@ -161,6 +175,9 @@ const MoreScreen: React.FC = () => {
                                             <Text style={[styles.menuSubtext, { color: colors.textSecondary }]}>{item.subtext}</Text>
                                         ) : null}
                                     </View>
+                                    {(item as { premium?: boolean }).premium && !isSubscribed ? (
+                                        <Ionicons name="lock-closed" size={18} color={colors.textMuted} style={{ marginRight: 4 }} />
+                                    ) : null}
                                     <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
                                 </Pressable>
                             ))}

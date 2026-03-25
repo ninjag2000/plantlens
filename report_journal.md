@@ -2,6 +2,20 @@
 
 ## 2026-02-05
 
+### Тренды и Discover-кэш в Supabase
+**Задача:** Хранить кэш трендов и кэш Discover в Supabase (при настроенном клиенте), с fallback на локальное хранилище.
+
+**Изменения:**
+- **Миграции Supabase:** Единая таблица `app_cache` (ключ `key`, `kind`: `trends` | `discover`, `data` jsonb, `updated_at`). Тренды — ключ `trends_${lang}`; discover — по одному ряду на растение (ключ = plantKey). Файлы: `supabase/migrations/20260206100000_trends_and_discover_cache.sql`, `20260206200000_app_cache_single_table.sql`.
+- **lib/data.ts:** `getTrends(lang, localGet)` / `setTrends(entry, lang, localSet)` — чтение/запись в `app_cache` по ключу `trends_${lang}`; при отсутствии Supabase — вызов local. `getDiscoverCache(localGet)` — объединение данных из Supabase (kind = discover) с локальным кэшем (локальные записи имеют приоритет). `setDiscoverPlant(plantKey, plant, localSet)` — запись одной записи в `app_cache` (data санитизируется: длинные/data URL не сохраняются).
+- **services/plantCacheService.ts:** `getCachedTrendsIfFresh(lang)` и `setCachedTrends(plants, lang)` вызывают `data.getTrends` / `data.setTrends` (Supabase + AsyncStorage). `getDiscoverPlantCache()` — через `data.getDiscoverCache(getDiscoverPlantCacheFromFiles)`. При `setCachedPlant` после записи в файл вызывается `data.setDiscoverPlant` для синхронизации с Supabase.
+
+**Файлы:** `lib/data.ts`, `services/plantCacheService.ts`, `supabase/migrations/*.sql`
+
+**Статус:** ✅ Завершено
+
+---
+
 ### Поддержка iOS
 **Задача:** Добавить поддержку сборки и запуска приложения на iOS.
 

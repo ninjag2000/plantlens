@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../hooks/useTheme';
+import { useI18n } from '../hooks/useI18n';
 import { getThemeColors } from '../utils/themeColors';
 
 const PlantWelcomeScreen: React.FC = () => {
     const navigation = useNavigation();
+    const { t } = useI18n();
     const { theme } = useTheme();
     const colors = getThemeColors(theme);
 
@@ -16,10 +18,8 @@ const PlantWelcomeScreen: React.FC = () => {
                 <View style={[styles.iconContainer, { backgroundColor: theme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)' }]}>
                     <Ionicons name="leaf" size={40} color={colors.primary} />
                 </View>
-                <Text style={[styles.title, { color: colors.text }]}>Ваш сад пока пуст</Text>
-                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
-                    Добавьте в мой сад свое первое растение.
-                </Text>
+                <Text style={[styles.title, { color: colors.text }]}>{t('empty_garden_title')}</Text>
+                <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{t('empty_garden_subtitle')}</Text>
                 <Pressable
                     onPress={() => navigation.navigate('NewCameraScreen' as never)}
                     style={({ pressed }) => [
@@ -29,7 +29,7 @@ const PlantWelcomeScreen: React.FC = () => {
                     ]}
                 >
                     <Ionicons name="scan" size={20} color="#ffffff" />
-                    <Text style={styles.buttonText}>Сканировать</Text>
+                    <Text style={styles.buttonText}>{t('empty_garden_scan_cta')}</Text>
                 </Pressable>
             </View>
         </View>

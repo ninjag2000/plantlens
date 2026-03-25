@@ -2,6 +2,7 @@ import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Plant, ScannedDocument, Collection } from '../types';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as data from '../lib/data';
 
 const PLANTS_KEY = 'plant_app_plants';
 const COLLECTIONS_KEY = 'plant_app_collections';
@@ -22,38 +23,43 @@ export interface TipArticle {
     plantName?: string;
 }
 
-export const getPlants = async (): Promise<Plant[]> => {
+/** Local-only read (AsyncStorage). Used by data layer when Supabase is off or as fallback. */
+async function getPlantsLocal(): Promise<Plant[]> {
     try {
-        const data = await AsyncStorage.getItem(PLANTS_KEY);
-        if (data === null) {
-            // Возвращаем пустой массив вместо создания стартового растения
+        const raw = await AsyncStorage.getItem(PLANTS_KEY);
+        if (raw === null) {
             await AsyncStorage.setItem(PLANTS_KEY, JSON.stringify([]));
             return [];
         }
-        return JSON.parse(data);
-    } catch (e) {
-        // Возвращаем пустой массив при ошибке вместо стартового растения
+        return JSON.parse(raw);
+    } catch {
         return [];
     }
-};
+}
+
+/** Local-only write full list (AsyncStorage). */
+async function savePlantsLocal(plants: Plant[]): Promise<void> {
+    await AsyncStorage.setItem(PLANTS_KEY, JSON.stringify(plants));
+}
 
 // Sync version for backward compatibility (returns cached or empty array)
 let plantsCache: Plant[] | null = null;
+
+export const getPlants = async (): Promise<Plant[]> => {
+    const result = await data.getPlants(getPlantsLocal);
+    plantsCache = result;
+    return result;
+};
+
 export const getPlantsSync = (): Plant[] => {
     if (plantsCache) return plantsCache;
-    return []; // Возвращаем пустой массив вместо стартового растения
+    return [];
 };
 
 export const savePlant = async (plant: Plant): Promise<void> => {
-    const plants = await getPlants();
-    const existingIndex = plants.findIndex(p => p.id === plant.id);
-    if (existingIndex > -1) {
-        plants[existingIndex] = plant;
-    } else {
-        plants.unshift(plant);
-    }
-    await AsyncStorage.setItem(PLANTS_KEY, JSON.stringify(plants));
-    plantsCache = plants;
+    await data.savePlant(plant, getPlantsLocal, savePlantsLocal);
+    const list = await data.getPlants(getPlantsLocal);
+    plantsCache = list;
 };
 
 export const updatePlantInStorage = async (plant: Plant): Promise<void> => {
@@ -61,10 +67,9 @@ export const updatePlantInStorage = async (plant: Plant): Promise<void> => {
 };
 
 export const deletePlant = async (id: string): Promise<void> => {
-    const plants = await getPlants();
-    const filtered = plants.filter(plant => plant.id !== id);
-    await AsyncStorage.setItem(PLANTS_KEY, JSON.stringify(filtered));
-    plantsCache = filtered;
+    await data.deletePlant(id, getPlantsLocal, savePlantsLocal);
+    const list = await data.getPlants(getPlantsLocal);
+    plantsCache = list;
     const { removeCachedPlantDetail } = await import('./plantCacheService');
     await removeCachedPlantDetail(id);
 };

@@ -9,6 +9,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import { CatalogPlant, Plant } from '../types';
 import { getPlantImageAIUrl, getBackupPlantImage, isInvalidImageDataUrl, getKnownGoodPlantImage } from './plantImageService';
 import type { Language } from './translations';
+import * as data from '../lib/data';
 
 const DISCOVER_PLANT_CACHE_KEY = 'plantlens_discover_plant_cache';
 const DISCOVER_PLANT_CACHE_DIR_NAME = 'plantlens_plant_cache';
@@ -170,8 +171,8 @@ async function migrateDiscoverCacheFromAsyncStorageIfNeeded(): Promise<void> {
     }
 }
 
-/** Загрузить весь кэш растений Discover из файлов (один файл — одно растение, без лимита по объёму). */
-export async function getDiscoverPlantCache(): Promise<CachedPlantRecord> {
+/** Только чтение из файлов (без Supabase). Используется в data.getDiscoverCache. */
+async function getDiscoverPlantCacheFromFiles(): Promise<CachedPlantRecord> {
     try {
         await migrateDiscoverCacheFromAsyncStorageIfNeeded();
         const dir = getDiscoverPlantCacheDir();
@@ -203,6 +204,11 @@ export async function getDiscoverPlantCache(): Promise<CachedPlantRecord> {
     } catch {
         return {};
     }
+}
+
+/** Загрузить кэш Discover: Supabase + локальные файлы (локальные перекрывают по ключу). */
+export async function getDiscoverPlantCache(): Promise<CachedPlantRecord> {
+    return data.getDiscoverCache(getDiscoverPlantCacheFromFiles);
 }
 
 /** URL «нормальный»: реальное фото (http/file), не заглушка и не Pollinations. */
@@ -242,7 +248,8 @@ export async function setCachedPlant(plantKey: string, plant: CatalogPlant): Pro
         const path = dir + keyToFilename(plantKey);
         await FileSystem.writeAsStringAsync(path, JSON.stringify(toWrite));
         trimDiscoverCacheIfNeeded().catch(() => {});
-        console.log('[PlantLens кэш] записан (файл)', { key: plantKey });
+        await data.setDiscoverPlant(plantKey, toWrite, async () => {});
+        console.log('[PlantLens кэш] записан (файл + Supabase)', { key: plantKey });
     } catch (e) {
         console.warn('[plantCache] setCachedPlant failed', e);
     }
@@ -279,33 +286,36 @@ export async function clearDiscoverPlantCache(): Promise<void> {
 
 export type TrendsCacheEntry = { plants: CatalogPlant[]; fetchedAt: number; cachedDate?: string };
 
-/** Получить кэш трендов для языка, если он закэширован сегодня (по локальной дате). */
+/** Получить кэш трендов для языка (Supabase или AsyncStorage), если свежий — сегодня или < 24 ч. */
 export async function getCachedTrendsIfFresh(lang: Language = 'en'): Promise<CatalogPlant[] | null> {
-    try {
-        const key = getTrendsCacheKey(lang);
-        const raw = await AsyncStorage.getItem(key);
-        if (!raw) return null;
-        const entry = JSON.parse(raw) as TrendsCacheEntry;
-        const { plants, fetchedAt, cachedDate } = entry;
-        if (!Array.isArray(plants)) return null;
-        const today = getTodayDateString();
-        if (cachedDate && cachedDate === today) return plants;
-        // старый формат без cachedDate: считаем свежим только если < 24 ч
-        if (!cachedDate && typeof fetchedAt === 'number' && Date.now() - fetchedAt <= 24 * 60 * 60 * 1000) return plants;
-        return null;
-    } catch {
-        return null;
-    }
+    const localGet = async (l: string) => {
+        try {
+            const raw = await AsyncStorage.getItem(getTrendsCacheKey(l as Language));
+            if (!raw) return null;
+            return JSON.parse(raw) as data.TrendsCacheEntry;
+        } catch {
+            return null;
+        }
+    };
+    const entry = await data.getTrends(lang, localGet);
+    if (!entry?.plants || !Array.isArray(entry.plants)) return null;
+    const today = getTodayDateString();
+    if (entry.cachedDate && entry.cachedDate === today) return entry.plants;
+    if (!entry.cachedDate && typeof entry.fetchedAt === 'number' && Date.now() - entry.fetchedAt <= 24 * 60 * 60 * 1000) return entry.plants;
+    return null;
 }
 
-/** Сохранить тренды в кэш с датой текущего дня для данного языка. */
+/** Сохранить тренды в кэш (AsyncStorage + Supabase при наличии). */
 export async function setCachedTrends(plants: CatalogPlant[], lang: Language = 'en'): Promise<void> {
-    try {
-        const entry: TrendsCacheEntry = { plants, fetchedAt: Date.now(), cachedDate: getTodayDateString() };
-        await AsyncStorage.setItem(getTrendsCacheKey(lang), JSON.stringify(entry));
-    } catch (e) {
-        console.warn('[plantCache] setCachedTrends failed', e);
-    }
+    const entry: TrendsCacheEntry = { plants, fetchedAt: Date.now(), cachedDate: getTodayDateString() };
+    const localSet = async (e: TrendsCacheEntry, l: string) => {
+        try {
+            await AsyncStorage.setItem(getTrendsCacheKey(l as Language), JSON.stringify(e));
+        } catch (err) {
+            console.warn('[plantCache] setCachedTrends local failed', err);
+        }
+    };
+    await data.setTrends(entry, lang, localSet);
 }
 
 const TRENDS_LANGUAGES: Language[] = ['en', 'ru', 'de', 'fr', 'es'];

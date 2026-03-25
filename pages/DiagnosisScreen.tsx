@@ -5,6 +5,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { PottedPlantIcon } from '../components/CareIcons';
 import { useI18n } from '../hooks/useI18n';
 import { useTheme } from '../hooks/useTheme';
+import { useSubscription } from '../hooks/useSubscription';
 import { getThemeColors } from '../utils/themeColors';
 import { getReliableImage, GENERIC_FALLBACK_IMAGE } from '../services/geminiService';
 import { DISEASE_ZONE_PLANT_IMAGES, getDiseaseZoneImageIndex } from '../assets/images/plants';
@@ -77,6 +78,7 @@ const DiagnosisScreen: React.FC = () => {
     const route = useRoute();
     const { t } = useI18n();
     const { theme } = useTheme();
+    const { isSubscribed } = useSubscription();
     const colors = getThemeColors(theme);
     const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
@@ -100,8 +102,8 @@ const DiagnosisScreen: React.FC = () => {
 
     const diagnosisTools = [
         { id: "diag", icon: 'pulse' as const, titleKey: 'tool_ai_doctor_title' as const, descKey: 'tool_ai_doctor_desc' as const, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)', action: () => navigation.navigate('NewCameraScreen' as never, { analysisMode: 'diagnosis' } as never) },
-        { id: 'water', titleKey: 'care_water' as const, descKey: 'tool_watering_desc' as const, icon: 'water' as const, action: () => navigation.navigate('NewCameraScreen' as never, { analysisMode: 'water' } as never), color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
-        { id: 'light', titleKey: 'tool_light_title' as const, descKey: 'tool_light_desc' as const, icon: 'sunny' as const, action: () => navigation.navigate('Luxometer' as never), color: '#eab308', bg: 'rgba(234, 179, 8, 0.1)' },
+        { id: 'water', titleKey: 'care_water' as const, descKey: 'tool_watering_desc' as const, icon: 'water' as const, action: () => { if (!isSubscribed) { navigation.navigate('SubscriptionManage' as never); return; } navigation.navigate('NewCameraScreen' as never, { analysisMode: 'water' } as never); }, color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' },
+        { id: 'light', titleKey: 'tool_light_title' as const, descKey: 'tool_light_desc' as const, icon: 'sunny' as const, action: () => { if (!isSubscribed) { navigation.navigate('SubscriptionManage' as never); return; } navigation.navigate('Luxometer' as never); }, color: '#eab308', bg: 'rgba(234, 179, 8, 0.1)' },
         { id: 'repot', titleKey: 'care_repot' as const, descKey: 'tool_repot_desc' as const, icon: 'arrow-up-circle' as const, action: () => navigation.navigate('NewCameraScreen' as never, { analysisMode: 'repotting' } as never), color: '#f97316', bg: 'rgba(249, 115, 22, 0.1)' },
     ];
 

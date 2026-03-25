@@ -84,3 +84,5 @@ npx expo run:ios --device "iPhone 16"
 | **Prebuild** | ✅ | После изменений в `app.config.js` выполнить `npx expo prebuild` (или `--clean`). |
 
 Перед релизом на App Store: проверить подпись (Signing & Capabilities), тестовое устройство и симулятор, все сценарии с камерой/фото/геолокацией/уведомлениями и экспортом PDF.
+
+**Публикация в App Store:** пошаговая инструкция (EAS Build, Xcode, App Store Connect, модерация) — в [app-store.md](./app-store.md).

@@ -1,0 +1,36 @@
+# PlantLens — copy-paste for App Store Connect
+# Character limits: Name 30, Subtitle 30, Keywords 100 (no spaces), Promo 170
+
+=== NAME (30 chars) ===
+PlantLens — Identify Plants
+
+=== SUBTITLE EN (30 chars) ===
+Plant ID, care reminders & diagnosis
+
+=== SUBTITLE RU (30 chars) ===
+Растения, уход и диагноз по фото
+
+=== KEYWORDS (100 chars, comma, no spaces) ===
+plant,identifier,flower,garden,care,watering,diagnosis,disease,leaf,indoor,outdoor,scan,camera,reminder,plant care
+
+=== PROMOTIONAL TEXT EN (170 chars) ===
+Identify any plant from a photo, get care reminders, and diagnose diseases. Your pocket plant expert — try free.
+
+=== PROMOTIONAL TEXT RU (170 chars) ===
+Определяйте растения по фото, получайте напоминания по уходу и диагноз болезней. Карманный эксперт по растениям — попробуйте бесплатно.
+
+=== SHORT DESCRIPTION EN (first paragraph) ===
+PlantLens identifies plants from your camera or photo and helps you care for them. Set watering and fertilizing reminders, get AI-powered disease diagnosis, and export PDF reports. Supports indoor and outdoor plants in multiple languages.
+
+=== SHORT DESCRIPTION RU (first paragraph) ===
+PlantLens распознаёт растения по фото и помогает за ними ухаживать: напоминания о поливе и подкормке, AI-диагностика болезней и отчёты в PDF. Для комнатных и садовых растений, на нескольких языках.
+
+=== WHAT'S NEW 1.0.0 EN ===
+Welcome to PlantLens. Identify plants from photos, set care reminders, get AI disease diagnosis, and use the watering calculator and regional flora. We're glad you're here.
+
+=== WHAT'S NEW 1.0.0 RU ===
+Добро пожаловать в PlantLens. Определяйте растения по фото, настраивайте напоминания по уходу, получайте AI-диагностику болезней, калькулятор полива и флору региона. Рады видеть вас.
+
+=== CATEGORY ===
+Primary: Reference (or Lifestyle)
+Secondary: Education (or Utilities)

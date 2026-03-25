@@ -6,6 +6,7 @@ import LightSensor from 'expo-sensors/build/LightSensor';
 import { Ionicons } from '@expo/vector-icons';
 import { useI18n } from '../hooks/useI18n';
 import { useTheme } from '../hooks/useTheme';
+import { useSubscription } from '../hooks/useSubscription';
 import { getThemeColors } from '../utils/themeColors';
 import Svg, { Path, Defs, LinearGradient, Stop } from 'react-native-svg';
 
@@ -13,7 +14,33 @@ const LuxometerScreen: React.FC = () => {
     const navigation = useNavigation();
     const { t } = useI18n();
     const { theme } = useTheme();
+    const { isSubscribed } = useSubscription();
     const colors = getThemeColors(theme);
+
+    if (!isSubscribed) {
+        return (
+            <View style={[styles.container, { backgroundColor: colors.background }]}>
+                <View style={[styles.paywallHeader, { backgroundColor: colors.card, borderBottomColor: colors.borderLight }]}>
+                    <Pressable onPress={() => navigation.goBack()} style={[styles.paywallBack, { backgroundColor: colors.surface }]}>
+                        <Ionicons name="arrow-back" size={22} color={colors.text} />
+                    </Pressable>
+                    <Text style={[styles.paywallTitle, { color: colors.text }]}>{t('settings_premium_get')}</Text>
+                </View>
+                <View style={[styles.paywallContent, { backgroundColor: colors.background }]}>
+                    <View style={[styles.paywallCard, { backgroundColor: colors.card, borderColor: colors.borderLight }]}>
+                        <View style={[styles.paywallIconWrap, { backgroundColor: colors.primary + '20' }]}>
+                            <Ionicons name="lock-closed" size={48} color={colors.primary} />
+                        </View>
+                        <Text style={[styles.paywallCardTitle, { color: colors.text }]}>{t('settings_premium_get')}</Text>
+                        <Text style={[styles.paywallCardSubtitle, { color: colors.textSecondary }]}>{t('settings_premium_unlock_all')}</Text>
+                        <Pressable onPress={() => navigation.navigate('SubscriptionManage' as never)} style={[styles.paywallButton, { backgroundColor: colors.primary }]}>
+                            <Text style={styles.paywallButtonText}>{t('settings_premium_get')}</Text>
+                        </Pressable>
+                    </View>
+                </View>
+            </View>
+        );
+    }
     const [sensorAvailable, setSensorAvailable] = useState<boolean | null>(null);
     const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
     
@@ -310,6 +337,63 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#1e221f',
+    },
+    paywallHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        paddingTop: 48,
+        borderBottomWidth: 1,
+    },
+    paywallBack: {
+        padding: 8,
+        borderRadius: 9999,
+        marginRight: 12,
+    },
+    paywallTitle: {
+        fontSize: 18,
+        fontWeight: '800',
+    },
+    paywallContent: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 24,
+    },
+    paywallCard: {
+        padding: 32,
+        borderRadius: 24,
+        borderWidth: 1,
+        alignItems: 'center',
+    },
+    paywallIconWrap: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 16,
+    },
+    paywallCardTitle: {
+        fontSize: 20,
+        fontWeight: '900',
+        marginBottom: 8,
+        textAlign: 'center',
+    },
+    paywallCardSubtitle: {
+        fontSize: 14,
+        textAlign: 'center',
+        marginBottom: 24,
+    },
+    paywallButton: {
+        paddingVertical: 14,
+        paddingHorizontal: 28,
+        borderRadius: 12,
+    },
+    paywallButtonText: {
+        color: '#ffffff',
+        fontSize: 16,
+        fontWeight: '800',
     },
     centered: {
         justifyContent: 'center',

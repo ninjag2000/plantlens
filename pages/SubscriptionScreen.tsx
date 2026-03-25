@@ -33,7 +33,7 @@ const SubscriptionScreen: React.FC<SubscriptionScreenProps> = ({ onFinish, isMan
     const [selectedPlan, setSelectedPlan] = useState<'yearly' | 'monthly'>('yearly');
 
     const handleContinue = () => {
-        updateSubscription('active');
+        updateSubscription('active', { plan: selectedPlan });
         onFinish();
     };
 

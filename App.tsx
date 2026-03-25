@@ -11,6 +11,7 @@ import BottomNav from './components/BottomNav';
 import SplashScreen from './pages/SplashScreen';
 import OnboardingScreen from './pages/OnboardingScreen';
 import SubscriptionScreen from './pages/SubscriptionScreen';
+import SubscriptionManageScreen from './pages/SubscriptionManageScreen';
 import NewCameraScreen from './pages/NewCameraScreen';
 import NewCropScreen from './pages/NewCropScreen';
 import NewPreviewScreen from './pages/NewPreviewScreen';
@@ -160,7 +161,7 @@ const AppContent: React.FC = () => {
     }
 
     return (
-        <OnboardingProvider value={{ resetOnboarding }}>
+        <OnboardingProvider value={{ resetOnboarding, finishOnboarding: handleOnboardingFinish }}>
             <NavigationContainer key={onboardingComplete ? 'main' : 'onboarding'}>
                 <OfflineBanner />
                 <Stack.Navigator
@@ -212,15 +213,7 @@ const AppContent: React.FC = () => {
                             {(props) => <DocumentsScreen {...props} documents={documents} />}
                         </Stack.Screen>
                         <Stack.Screen name="Detail" component={DetailScreen} />
-                        <Stack.Screen name="SubscriptionManage">
-                            {(props) => (
-                                <SubscriptionScreen
-                                    {...props}
-                                    onFinish={() => props.navigation.goBack()}
-                                    isManaging={true}
-                                />
-                            )}
-                        </Stack.Screen>
+                        <Stack.Screen name="SubscriptionManage" component={SubscriptionManageScreen} />
                         <Stack.Screen name="PlantDetail">
                             {(props) => (
                                 <PlantDetailScreen

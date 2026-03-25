@@ -20,6 +20,8 @@ export type TranslationKey =
     | 'sub_feature_unlimited' | 'sub_feature_sync' | 'sub_feature_ai' | 'sub_feature_export' | 'sub_feature_ads'
     | 'sub_footer_yearly' | 'sub_footer_monthly'
     | 'sub_button_manage' | 'sub_button_free' | 'sub_button_continue'
+    | 'sub_current_plan' | 'sub_ends_on' | 'sub_change_plan' | 'sub_cancel_subscription'
+    | 'sub_cancel_confirm_title' | 'sub_cancel_confirm_message'
     | 'care_water' | 'care_fertilize' | 'care_misting' | 'care_repot' | 'care_ai_recommendation'
     | 'weather_forecast' | 'offline_banner'
     | 'home_agenda' | 'home_tools' | 'home_tools_weather' | 'home_library' | 'home_discover'
@@ -213,6 +215,8 @@ const en: Record<TranslationKey, string> = {
     sub_feature_unlimited: 'Unlimited Identifications', sub_feature_sync: 'Cloud Sync', sub_feature_ai: 'Advanced AI Diagnosis', sub_feature_export: 'PDF Exports', sub_feature_ads: 'No Ads',
     sub_footer_yearly: '7 days free, then $59.99/year', sub_footer_monthly: '$9.99/month, cancel anytime',
     sub_button_manage: 'Manage', sub_button_free: 'Try Free for 7 Days', sub_button_continue: 'Continue',
+    sub_current_plan: 'Current plan', sub_ends_on: 'Ends on', sub_change_plan: 'Change plan', sub_cancel_subscription: 'Cancel subscription',
+    sub_cancel_confirm_title: 'Cancel subscription?', sub_cancel_confirm_message: 'You will lose access to Premium features at the end of the billing period.',
     care_water: 'Watering', care_fertilize: 'Fertilizing', care_misting: 'Misting', care_repot: 'Repotting', care_ai_recommendation: 'AI Insight',
     weather_forecast: 'Forecast', offline_banner: 'Offline Mode',
     home_agenda: 'Care Agenda', home_tools: 'Tools', home_tools_weather: 'Weather', home_library: 'Library', home_discover: 'Discover',
@@ -431,6 +435,8 @@ const ru: Record<TranslationKey, string> = {
     sub_feature_unlimited: 'Безлимитные сканирования', sub_feature_sync: 'Синхронизация', sub_feature_ai: 'AI Доктор', sub_feature_export: 'PDF Отчеты', sub_feature_ads: 'Без рекламы',
     sub_footer_yearly: '7 дней бесплатно, затем 3990 ₽/год', sub_footer_monthly: '499 ₽/мес, отмена в любое время',
     sub_button_manage: 'Управлять', sub_button_free: 'Пробовать бесплатно', sub_button_continue: 'Продолжить',
+    sub_current_plan: 'Текущий план', sub_ends_on: 'Действует до', sub_change_plan: 'Сменить план', sub_cancel_subscription: 'Отменить подписку',
+    sub_cancel_confirm_title: 'Отменить подписку?', sub_cancel_confirm_message: 'Доступ к Premium закончится в конце оплаченного периода.',
     care_water: 'Полив', care_fertilize: 'Подкормка', care_misting: 'Опрыскивание', care_repot: 'Пересадка', care_ai_recommendation: 'AI Совет',
     weather_forecast: 'Прогноз', offline_banner: 'Оффлайн режим',
     home_agenda: 'Задачи', home_tools: 'Инструменты', home_tools_weather: 'Погода', home_library: 'Библиотека', home_discover: 'Обзор',
@@ -649,6 +655,8 @@ const de: Record<TranslationKey, string> = {
     sub_feature_unlimited: 'Unbegrenzte ID', sub_feature_sync: 'Cloud Sync', sub_feature_ai: 'AI Diagnose', sub_feature_export: 'PDF Export', sub_feature_ads: 'Keine Werbung',
     sub_footer_yearly: '7 Tage gratis, dann 59,99€/Jahr', sub_footer_monthly: '9,99€/Monat, jederzeit kündbar',
     sub_button_manage: 'Verwalten', sub_button_free: '7 Tage kostenlos testen', sub_button_continue: 'Weiter',
+    sub_current_plan: 'Aktueller Plan', sub_ends_on: 'Läuft bis', sub_change_plan: 'Plan ändern', sub_cancel_subscription: 'Abo kündigen',
+    sub_cancel_confirm_title: 'Abo kündigen?', sub_cancel_confirm_message: 'Premium endet am Ende des Abrechnungszeitraums.',
     care_water: 'Gießen', care_fertilize: 'Düngen', care_misting: 'Besprühen', care_repot: 'Umtopfen', care_ai_recommendation: 'AI Tipp',
     weather_forecast: 'Wetter', offline_banner: 'Offline-Modus',
     home_agenda: 'Aufgaben', home_tools: 'Tools', home_tools_weather: 'Wetter', home_library: 'Bibliothek', home_discover: 'Entdecken',
@@ -867,6 +875,8 @@ const fr: Record<TranslationKey, string> = {
     sub_feature_unlimited: 'Identifications illimitées', sub_feature_sync: 'Synchro Cloud', sub_feature_ai: 'Diagnostic IA', sub_feature_export: 'Export PDF', sub_feature_ads: 'Sans Pub',
     sub_footer_yearly: '7 jours gratuits, puis 59,99€/an', sub_footer_monthly: '9,99€/mois, annulable à tout moment',
     sub_button_manage: 'Gérer', sub_button_free: 'Essayer Gratuitement', sub_button_continue: 'Continuer',
+    sub_current_plan: 'Plan actuel', sub_ends_on: 'Se termine le', sub_change_plan: 'Changer de plan', sub_cancel_subscription: 'Annuler l\'abonnement',
+    sub_cancel_confirm_title: 'Annuler l\'abonnement ?', sub_cancel_confirm_message: 'L\'accès Premium prendra fin à la fin de la période en cours.',
     care_water: 'Arrosage', care_fertilize: 'Fertilisation', care_misting: 'Brumisation', care_repot: 'Rempotage', care_ai_recommendation: 'Conseil IA',
     weather_forecast: 'Météo', offline_banner: 'Mode Hors-ligne',
     home_agenda: 'Agenda', home_tools: 'Outils', home_tools_weather: 'Météo', home_library: 'Bibliothèque', home_discover: 'Découvrir',
@@ -1085,6 +1095,8 @@ const es: Record<TranslationKey, string> = {
     sub_feature_unlimited: 'Identificaciones ilimitadas', sub_feature_sync: 'Sync Nube', sub_feature_ai: 'Diagnóstico IA', sub_feature_export: 'Exportar PDF', sub_feature_ads: 'Sin Anuncios',
     sub_footer_yearly: '7 días gratis, luego 59,99€/año', sub_footer_monthly: '9,99€/mes, cancela cuando quieras',
     sub_button_manage: 'Gestionar', sub_button_free: 'Prueba Gratis', sub_button_continue: 'Continuar',
+    sub_current_plan: 'Plan actual', sub_ends_on: 'Termina el', sub_change_plan: 'Cambiar plan', sub_cancel_subscription: 'Cancelar suscripción',
+    sub_cancel_confirm_title: '¿Cancelar suscripción?', sub_cancel_confirm_message: 'Perderás el acceso Premium al final del periodo de facturación.',
     care_water: 'Riego', care_fertilize: 'Fertilizante', care_misting: 'Rocío', care_repot: 'Trasplante', care_ai_recommendation: 'Consejo IA',
     weather_forecast: 'Clima', offline_banner: 'Modo Offline',
     home_agenda: 'Agenda', home_tools: 'Herramientas', home_tools_weather: 'Clima', home_library: 'Biblioteca', home_discover: 'Descubrir',

@@ -1,6 +1,6 @@
 import React, { createContext, useContext } from 'react';
 
-export type OnboardingContextValue = { resetOnboarding: () => Promise<void> };
+export type OnboardingContextValue = { resetOnboarding: () => Promise<void>; finishOnboarding?: () => void };
 
 const OnboardingContext = createContext<OnboardingContextValue | null>(null);
 

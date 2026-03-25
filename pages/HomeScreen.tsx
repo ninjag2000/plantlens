@@ -641,20 +641,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ plants, updatePlant }) => {
                 }
             }
 
-            if (isSubscribed) {
-                const weatherData = await getCurrentWeather(lat, lon);
-                setWeather(weatherData);
-            } else {
-                setWeather(null);
-            }
-
-            const catalogData = await getRegionalCatalog(lat, lon, language);
+            const [catalogData, trending, discoverCache] = await Promise.all([
+                getRegionalCatalog(lat, lon, language),
+                getTrendingPlants(0, language),
+                getDiscoverPlantCache(),
+            ]);
             setRegionalCatalog({ ...catalogData, locationName });
-            
-            const trending = await getTrendingPlants(0, language);
             setTrendingPlants(trending);
             console.log('[PlantLens тренды] загружены', { count: trending.length, keys: trending.map((p) => getPlantKey(p)) });
-            const discoverCache = await getDiscoverPlantCache();
             const uriMap: Record<string, string> = {};
             Object.entries(discoverCache).forEach(([k, v]) => {
                 if (v?.imageUrl && !v.imageUrl.startsWith('data:image/gif;base64')) uriMap[k] = v.imageUrl;
@@ -662,6 +656,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ plants, updatePlant }) => {
             setTrendingDiscoverCache(uriMap);
             if (Object.keys(uriMap).length > 0) {
                 console.log('[PlantLens кэш] тренды: подставлен Discover-кэш', { keys: Object.keys(uriMap) });
+            }
+            if (isSubscribed) {
+                getCurrentWeather(lat, lon).then(setWeather).catch(() => setWeather(null));
+            } else {
+                setWeather(null);
             }
             trending.forEach((plant) => {
                 const key = getPlantKey(plant);

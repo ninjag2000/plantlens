@@ -40,14 +40,22 @@ module.exports = {
     extra: {
       OPENROUTER_API_KEY: env.OPENROUTER_API_KEY || process.env.OPENROUTER_API_KEY || "",
       GEMINI_API_KEY: env.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "",
-      POLLINATIONS_API_KEY: env.POLLINATIONS_API_KEY || process.env.POLLINATIONS_API_KEY || ""
+      POLLINATIONS_API_KEY: env.POLLINATIONS_API_KEY || process.env.POLLINATIONS_API_KEY || "",
+      SUPABASE_URL: env.SUPABASE_URL || process.env.SUPABASE_URL || "",
+      SUPABASE_ANON_KEY: env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || "",
+      eas: {
+        projectId: "ceac56c4-c654-4e5a-a4c0-c5f04d99c0bf"
+      }
     },
     assetBundlePatterns: [
       "**/*"
     ],
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.plantlens.app"
+      bundleIdentifier: "com.plantlens.app",
+      infoPlist: {
+        ITSAppUsesNonExemptEncryption: false
+      }
     },
     android: {
       adaptiveIcon: {

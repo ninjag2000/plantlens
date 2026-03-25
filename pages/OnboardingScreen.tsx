@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, Animated, ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -7,6 +7,8 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 import { useI18n } from '../hooks/useI18n';
 import { useTheme } from '../hooks/useTheme';
+import { useSubscription } from '../hooks/useSubscription';
+import { useOnboarding } from '../context/OnboardingContext';
 import { getThemeColors } from '../utils/themeColors';
 
 const tokens = {
@@ -35,6 +37,8 @@ const OnboardingScreen: React.FC = () => {
     const insets = useSafeAreaInsets();
     const { t } = useI18n();
     const { theme } = useTheme();
+    const { isSubscribed } = useSubscription();
+    const { finishOnboarding } = useOnboarding();
     const colors = getThemeColors(theme);
     const [currentStep, setCurrentStep] = useState(0);
     const [selectedGoal, setSelectedGoal] = useState<Goal | null>(null);
@@ -52,7 +56,11 @@ const OnboardingScreen: React.FC = () => {
 
     const handleFinish = () => {
         if (isInitialFlow) {
-            navigation.navigate('Subscription' as never);
+            if (isSubscribed && finishOnboarding) {
+                finishOnboarding();
+            } else {
+                navigation.navigate('Subscription' as never);
+            }
         } else {
             navigation.goBack();
         }
@@ -63,11 +71,15 @@ const OnboardingScreen: React.FC = () => {
         if (currentStep === 2 && !experience) return;
 
         if (currentStep < 3) {
-            Animated.sequence([
-                Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
-                Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
-            ]).start();
-            setCurrentStep(currentStep + 1);
+            const nextStep = currentStep + 1;
+            Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+                setCurrentStep(nextStep);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+                    });
+                });
+            });
         } else {
             handleFinish();
         }
@@ -84,60 +96,22 @@ const OnboardingScreen: React.FC = () => {
         diagnosis: t('onboarding_goal_diagnosis') || 'Treat Disease',
     };
     const goals = [
-        { 
-            id: 'identify' as Goal, 
-            label: goalLabels.identify, 
-            icon: 'leaf' as const, 
-            color: tokens.primary,
-            bg: 'rgba(16, 185, 129, 0.12)'
-        },
-        { 
-            id: 'care' as Goal, 
-            label: goalLabels.care, 
-            icon: 'water' as const, 
-            color: '#0ea5e9',
-            bg: 'rgba(14, 165, 233, 0.12)'
-        },
-        { 
-            id: 'diagnosis' as Goal, 
-            label: goalLabels.diagnosis, 
-            icon: 'shield-checkmark' as const, 
-            color: '#ef4444',
-            bg: 'rgba(239, 68, 68, 0.1)'
-        },
+        { id: 'identify' as Goal, label: goalLabels.identify, icon: 'leaf' as const, color: tokens.primary, bg: 'rgba(16, 185, 129, 0.12)' },
+        { id: 'care' as Goal, label: goalLabels.care, icon: 'water' as const, color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.12)' },
+        { id: 'diagnosis' as Goal, label: goalLabels.diagnosis, icon: 'shield-checkmark' as const, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' },
     ];
 
-    // Dynamic Step 1 Content: Based on Goal (green/violet palette per rule)
+    // Dynamic Step 1 Content: Based on Goal
     const getDynamicFeature = () => {
         switch (selectedGoal) {
-            case 'care': 
-                return { 
-                    icon: 'water' as const, 
-                    title: t('onboarding_feature_care_title'), 
-                    desc: t('onboarding_feature_care_desc'), 
-                    color: '#0ea5e9',
-                    bg: 'rgba(14, 165, 233, 0.12)'
-                };
-            case 'diagnosis': 
-                return { 
-                    icon: 'shield-checkmark' as const, 
-                    title: t('onboarding_feature_diag_title'), 
-                    desc: t('onboarding_feature_diag_desc'), 
-                    color: '#ef4444',
-                    bg: 'rgba(254, 226, 226, 0.9)'
-                };
-            default: 
-                return { 
-                    icon: 'scan' as const, 
-                    title: t('onboarding_feature_identify_title'), 
-                    desc: t('onboarding_feature_identify_desc'), 
-                    color: tokens.primary,
-                    bg: 'rgba(16, 185, 129, 0.12)'
-                };
+            case 'care': return { icon: 'water' as const, title: t('onboarding_feature_care_title'), desc: t('onboarding_feature_care_desc'), color: '#0ea5e9', bg: 'rgba(14, 165, 233, 0.12)' };
+            case 'diagnosis': return { icon: 'shield-checkmark' as const, title: t('onboarding_feature_diag_title'), desc: t('onboarding_feature_diag_desc'), color: '#ef4444', bg: 'rgba(254, 226, 226, 0.9)' };
+            default: return { icon: 'scan' as const, title: t('onboarding_feature_identify_title'), desc: t('onboarding_feature_identify_desc'), color: tokens.primary, bg: 'rgba(16, 185, 129, 0.12)' };
         }
     };
 
-    const renderStepContent = () => {
+    // Мемоизация контента шага — на iOS меньше ре-рендеров иконок при обновлении insets/других state.
+    const stepContent = useMemo(() => {
         if (currentStep === 0) {
             return (
                 <>
@@ -156,7 +130,7 @@ const OnboardingScreen: React.FC = () => {
                                     pressed && styles.goalButtonPressed,
                                 ]}
                             >
-                                <View style={[styles.goalIconContainer, { backgroundColor: goal.bg }]}>
+                                <View style={[styles.goalIconContainer, { backgroundColor: goal.bg }]} collapsable={false}>
                                     <Ionicons name={goal.icon} size={24} color={goal.color} />
                                 </View>
                                 <View style={styles.goalLabelWrap}>
@@ -173,12 +147,11 @@ const OnboardingScreen: React.FC = () => {
                 </>
             );
         }
-
         if (currentStep === 1) {
             const feature = getDynamicFeature();
             return (
                 <View style={styles.featureContainer}>
-                    <View style={[styles.featureIconContainer, { borderColor: feature.color }]}>
+                    <View style={[styles.featureIconContainer, { borderColor: feature.color }]} collapsable={false}>
                         <Ionicons name={feature.icon} size={72} color={feature.color} />
                     </View>
                     <Text style={[styles.featureTitle, { color: colors.text }]}>{feature.title}</Text>
@@ -186,7 +159,6 @@ const OnboardingScreen: React.FC = () => {
                 </View>
             );
         }
-
         if (currentStep === 2) {
             return (
                 <>
@@ -202,7 +174,7 @@ const OnboardingScreen: React.FC = () => {
                                 experience === 'beginner' && [styles.experienceButtonSelected, { borderColor: colors.primary }],
                             ]}
                         >
-                            <View style={styles.experienceIconContainer}>
+                            <View style={styles.experienceIconContainer} collapsable={false}>
                                 <Ionicons name="person" size={32} color="#eab308" />
                             </View>
                             <View style={styles.experienceTextContainer}>
@@ -219,7 +191,7 @@ const OnboardingScreen: React.FC = () => {
                                 experience === 'pro' && [styles.experienceButtonSelected, { borderColor: colors.primary }],
                             ]}
                         >
-                            <View style={[styles.experienceIconContainer, { backgroundColor: theme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)' }]}>
+                            <View style={[styles.experienceIconContainer, { backgroundColor: theme === 'dark' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(16, 185, 129, 0.1)' }]} collapsable={false}>
                                 <Ionicons name="trophy" size={32} color={colors.primary} />
                             </View>
                             <View style={styles.experienceTextContainer}>
@@ -231,11 +203,10 @@ const OnboardingScreen: React.FC = () => {
                 </>
             );
         }
-
         if (currentStep === 3) {
             return (
                 <View style={styles.readyContainer}>
-                    <View style={[styles.readyIconContainer, { backgroundColor: colors.primary }]}>
+                    <View style={[styles.readyIconContainer, { backgroundColor: colors.primary }]} collapsable={false}>
                         <MaterialIcons name="rocket-launch" size={72} color="#ffffff" />
                     </View>
                     <Text style={[styles.readyTitle, { color: colors.text }]}>{t('onboarding_ready_title')}</Text>
@@ -243,9 +214,8 @@ const OnboardingScreen: React.FC = () => {
                 </View>
             );
         }
-
         return null;
-    };
+    }, [currentStep, selectedGoal, experience, theme, colors.text, colors.textSecondary, colors.card, colors.borderLight, colors.primary, goalLabels.identify, goalLabels.care, goalLabels.diagnosis]);
 
     return (
         <View style={[styles.container, { paddingTop: insets.top + 12, paddingBottom: insets.bottom + 56, paddingHorizontal: 24 }]}>
@@ -270,8 +240,8 @@ const OnboardingScreen: React.FC = () => {
             </View>
 
             <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-                <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-                    {renderStepContent()}
+                <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} removeClippedSubviews={false}>
+                    {stepContent}
                 </ScrollView>
             </Animated.View>
 
@@ -394,8 +364,12 @@ const styles = StyleSheet.create({
         transform: [{ scale: 0.98 }],
     },
     goalIconContainer: {
+        width: 52,
+        height: 52,
         padding: 14,
         borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     goalLabelWrap: {
         flex: 1,
@@ -424,6 +398,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     featureIconContainer: {
+        width: 144,
+        height: 144,
         marginBottom: 32,
         padding: 36,
         borderRadius: tokens.radiusCard + 8,
@@ -432,6 +408,8 @@ const styles = StyleSheet.create({
         shadowColor: 'transparent',
         shadowOpacity: 0,
         elevation: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     featureTitle: {
         fontSize: 26,
@@ -472,9 +450,13 @@ const styles = StyleSheet.create({
         // borderColor применяется через inline стили
     },
     experienceIconContainer: {
+        width: 64,
+        height: 64,
         padding: 16,
         backgroundColor: 'rgba(234, 179, 8, 0.12)',
         borderRadius: 18,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     experienceTextContainer: {
         flex: 1,
@@ -502,6 +484,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     readyIconContainer: {
+        width: 144,
+        height: 144,
         marginBottom: 32,
         padding: 36,
         borderRadius: tokens.radiusCard + 8,
@@ -510,7 +494,8 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.25,
         shadowRadius: 16,
         elevation: 4,
-        // backgroundColor и shadowColor применяются через inline стили
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     readyTitle: {
         fontSize: 28,

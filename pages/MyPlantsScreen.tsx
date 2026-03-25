@@ -773,7 +773,7 @@ const MyPlantsScreen: React.FC<MyPlantsScreenProps> = ({ plants: plantsProp, upd
                                 <Ionicons name="search" size={48} color={colors.textMuted} style={{ opacity: 0.5 }} />
                                 <Text style={[styles.emptyTitle, { color: colors.text }]}>{t('search_no_results')}</Text>
                                 <Pressable onPress={handleResetFilters} style={[styles.resetButton, { backgroundColor: colors.surface, borderColor: colors.borderLight }]}>
-                                    <Text style={[styles.resetButtonText, { color: colors.textSecondary }]}>Сбросить</Text>
+                                    <Text style={[styles.resetButtonText, { color: colors.textSecondary }]}>{t('filter_reset')}</Text>
                                 </Pressable>
                             </View>
                         ) : (
